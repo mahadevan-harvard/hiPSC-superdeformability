@@ -1,2 +1,13 @@
 Data/
 Plots/
+
+# Ignore build metadata
+*.egg-info/
+
+# Bytecode and cache
+__pycache__/
+*.pyc
+
+# Optional: ignore virtual environments
+venv/
+.env/
