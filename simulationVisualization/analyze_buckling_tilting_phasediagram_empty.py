@@ -1,6 +1,5 @@
 import numpy as np
-import os
-import datetime
+import h5py
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -76,56 +75,56 @@ for kt in kt_range:
 		curvature_pool = {k: [] for k in iterations_to_plot}
 
 		for V in V_range:
-			name = f"shape_kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"#shape_kl_1.0_ka_0.01_kt_0.0_al_0.0_Ri_1.6_beta_0.5_N_20_d_0.0_disorder2_check"
-			data = np.load(f"Data/{name}.npz")#np.load("Data/shape_kn_10.0_kl_1.0_ka_0.3_thr_0.5_d_0.1_inelastic_c.npz")
-			shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-			cell_list = data["cell_list"]
-			Niterations = shapes.shape[2]
+			name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"#shape_kl_1.0_ka_0.01_kt_0.0_al_0.0_Ri_1.6_beta_0.5_N_20_d_0.0_disorder2_check"
+			with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+				shapes = h5["data"][:] 
+				cell_list = h5["cell_list"][:]
+				Niterations = shapes.shape[2]
 
-			for k in iterations_to_plot:
-				R0 = shapes[:,:,0]
-				R = shapes[:,:,k]
-				for j,cell_nodes in enumerate(cell_list):
+				for k in iterations_to_plot:
+					R0 = shapes[:,:,0]
+					R = shapes[:,:,k]
+					for j,cell_nodes in enumerate(cell_list):
 
-					# Extract inner and outer node
-					inner = cell_nodes[Nlateral]
-					outer = cell_nodes[0]
-					R_in, R_out = R[inner], R[outer]
+						# Extract inner and outer node
+						inner = cell_nodes[Nlateral]
+						outer = cell_nodes[0]
+						R_in, R_out = R[inner], R[outer]
 
-					# Get lateral nodes (excluding inner and outer)
-					interior_nodes = cell_nodes[1:Nlateral]
-					node_indices = [outer] + list(interior_nodes) + [inner]
-					points = R[node_indices]
+						# Get lateral nodes (excluding inner and outer)
+						interior_nodes = cell_nodes[1:Nlateral]
+						node_indices = [outer] + list(interior_nodes) + [inner]
+						points = R[node_indices]
 
-					# Compute arc length with respect to outer node
-					s = np.zeros(len(points))
-					s[1:] = np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))
+						# Compute arc length with respect to outer node
+						s = np.zeros(len(points))
+						s[1:] = np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))
 
-					# Compute tangents with respect to arc length
-					dR = np.gradient(points, s, axis=0)					# distance between nearest neighbours
-					tangent = dR / np.linalg.norm(dR, axis=1)[:, None]	# unit vectors
+						# Compute tangents with respect to arc length
+						dR = np.gradient(points, s, axis=0)					# distance between nearest neighbours
+						tangent = dR / np.linalg.norm(dR, axis=1)[:, None]	# unit vectors
 
-					# Compute curvature
-					dtangent = np.gradient(tangent, s, axis=0)		# rate of change tangent vector with respect to the arc length
-					curvature = np.linalg.norm(dtangent, axis=1)	# Curvature is the magnitude of the rate of change
+						# Compute curvature
+						dtangent = np.gradient(tangent, s, axis=0)		# rate of change tangent vector with respect to the arc length
+						curvature = np.linalg.norm(dtangent, axis=1)	# Curvature is the magnitude of the rate of change
 
-					# Total arc length
-					arc_length = s[-1] - s[0]
+						# Total arc length
+						arc_length = s[-1] - s[0]
 
-					# Arc-length-normalized total bending
-					total_bending = arc_length * np.sum(curvature**2 * np.gradient(s))	
+						# Arc-length-normalized total bending
+						total_bending = arc_length * np.sum(curvature**2 * np.gradient(s))	
 
-					curvature_pool[k].append(total_bending)			
-				
-				tilt0 = tilt_angle(R0, cell_list, Nlateral)
-				tilt = tilt_angle(R, cell_list, Nlateral)
+						curvature_pool[k].append(total_bending)			
+					
+					tilt0 = tilt_angle(R0, cell_list, Nlateral)
+					tilt = tilt_angle(R, cell_list, Nlateral)
 
-				total_tilt = tilt**2
-				for entry in total_tilt:
-					tilt_pool[k].append(entry)	
+					total_tilt = tilt**2
+					for entry in total_tilt:
+						tilt_pool[k].append(entry)	
 
-				for entry in tilt0:
-					tilt0_pool[k].append(entry)		
+					for entry in tilt0:
+						tilt0_pool[k].append(entry)		
 
 
 
@@ -171,56 +170,56 @@ for kt in kt_range:
 		curvature_pool = {k: [] for k in iterations_to_plot}
 
 		for V in V_range:
-			name = f"shape_kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"
-			data = np.load(f"Data/{name}.npz")
-			shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-			cell_list = data["cell_list"]
-			Niterations = shapes.shape[2]
+			name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"
+			with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+				shapes = h5["data"][:] 
+				cell_list = h5["cell_list"][:]
+				Niterations = shapes.shape[2]
 
-			for k in iterations_to_plot:
-				R0 = shapes[:,:,0]
-				R = shapes[:,:,k]
-				for j,cell_nodes in enumerate(cell_list):
+				for k in iterations_to_plot:
+					R0 = shapes[:,:,0]
+					R = shapes[:,:,k]
+					for j,cell_nodes in enumerate(cell_list):
 
-					# Extract inner and outer node
-					inner = cell_nodes[Nlateral]
-					outer = cell_nodes[0]
-					R_in, R_out = R[inner], R[outer]
+						# Extract inner and outer node
+						inner = cell_nodes[Nlateral]
+						outer = cell_nodes[0]
+						R_in, R_out = R[inner], R[outer]
 
-					# Get lateral nodes (excluding inner and outer)
-					interior_nodes = cell_nodes[1:Nlateral]
-					node_indices = [outer] + list(interior_nodes) + [inner]
-					points = R[node_indices]
+						# Get lateral nodes (excluding inner and outer)
+						interior_nodes = cell_nodes[1:Nlateral]
+						node_indices = [outer] + list(interior_nodes) + [inner]
+						points = R[node_indices]
 
-					# Compute arc length with respect to outer node
-					s = np.zeros(len(points))
-					s[1:] = np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))
+						# Compute arc length with respect to outer node
+						s = np.zeros(len(points))
+						s[1:] = np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))
 
-					# Compute tangents with respect to arc length
-					dR = np.gradient(points, s, axis=0)					# distance between nearest neighbours
-					tangent = dR / np.linalg.norm(dR, axis=1)[:, None]	# unit vectors
+						# Compute tangents with respect to arc length
+						dR = np.gradient(points, s, axis=0)					# distance between nearest neighbours
+						tangent = dR / np.linalg.norm(dR, axis=1)[:, None]	# unit vectors
 
-					# Compute curvature
-					dtangent = np.gradient(tangent, s, axis=0)		# rate of change tangent vector with respect to the arc length
-					curvature = np.linalg.norm(dtangent, axis=1)	# Curvature is the magnitude of the rate of change
+						# Compute curvature
+						dtangent = np.gradient(tangent, s, axis=0)		# rate of change tangent vector with respect to the arc length
+						curvature = np.linalg.norm(dtangent, axis=1)	# Curvature is the magnitude of the rate of change
 
-					# Total arc length
-					arc_length = s[-1] - s[0]
+						# Total arc length
+						arc_length = s[-1] - s[0]
 
-					# Arc-length-normalized total bending
-					total_bending = arc_length * np.sum(curvature**2 * np.gradient(s))	
+						# Arc-length-normalized total bending
+						total_bending = arc_length * np.sum(curvature**2 * np.gradient(s))	
 
-					curvature_pool[k].append(total_bending)			
-				
-				tilt0 = tilt_angle(R0, cell_list, Nlateral)
-				tilt = tilt_angle(R, cell_list, Nlateral)
+						curvature_pool[k].append(total_bending)			
+					
+					tilt0 = tilt_angle(R0, cell_list, Nlateral)
+					tilt = tilt_angle(R, cell_list, Nlateral)
 
-				total_tilt = tilt**2
-				for entry in total_tilt:
-					tilt_pool[k].append(entry)	
+					total_tilt = tilt**2
+					for entry in total_tilt:
+						tilt_pool[k].append(entry)	
 
-				for entry in tilt0:
-					tilt0_pool[k].append(entry)		
+					for entry in tilt0:
+						tilt0_pool[k].append(entry)		
 
 
 

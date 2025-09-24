@@ -1,17 +1,10 @@
 import numpy as np
-import os
-import datetime
-
-from scipy.optimize import brentq
+import h5py
 
 import matplotlib.pyplot as plt
 import matplotlib
 
 import plot_utils.PlotLibrary as plotlib
-
-from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
-							   AutoMinorLocator, LogLocator)
-
 
 cmap = matplotlib.colormaps['Reds']
 
@@ -82,19 +75,19 @@ for kt in kt_range:
 
 	for V in V_range:
 		name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_0.0_ddlog9_V{V:03d}"
-		data = np.load(f"Data/shape_{name}.npz")
-		shapes = data["data"]
-		cell_list = data["cell_list"]
-		Niterations = shapes.shape[2]
+		with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+			shapes = h5["data"][:] 
+			cell_list = h5["cell_list"][:]
+			Niterations = shapes.shape[2]
 
-		data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
+			data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
 
-		r0 = shapes[:,:,0]
-		for k in iterations_to_plot:
-			R = shapes[:, :, k]
-			tilt = tilt_angle(R, cell_list, Nlateral)
-			total_tilt = tilt**2
-			tilt_pool[k].append(total_tilt)		
+			r0 = shapes[:,:,0]
+			for k in iterations_to_plot:
+				R = shapes[:, :, k]
+				tilt = tilt_angle(R, cell_list, Nlateral)
+				total_tilt = tilt**2
+				tilt_pool[k].append(total_tilt)		
 
 	strain = []
 	C = []

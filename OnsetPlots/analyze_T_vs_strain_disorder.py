@@ -1,6 +1,5 @@
 import numpy as np
-from scipy.interpolate import UnivariateSpline
-
+import h5py
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -124,48 +123,48 @@ for kt in kt_range:
 
 	for V in V_range:
 		name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_ddlog9_V{V:03d}"
-		data = np.load(f"Data/shape_{name}.npz")
-		shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-		cell_list = data["cell_list"]
-		Niterations = shapes.shape[2]
+		with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+			shapes = h5["data"][:] 
+			cell_list = h5["cell_list"][:]
+			Niterations = shapes.shape[2]
 
-		data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
+			data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
 
 
-		r0 = shapes[:,:,0]
-		for k in iterations_to_plot:
-			R = shapes[:, :, k]
-			for j,cell_nodes in enumerate(cell_list):
+			r0 = shapes[:,:,0]
+			for k in iterations_to_plot:
+				R = shapes[:, :, k]
+				for j,cell_nodes in enumerate(cell_list):
 
-				# Extract inner and outer node
-				inner = cell_nodes[Nlateral]
-				outer = cell_nodes[0]
+					# Extract inner and outer node
+					inner = cell_nodes[Nlateral]
+					outer = cell_nodes[0]
 
-				# Get lateral nodes (excluding inner and outer)
-				interior_nodes = cell_nodes[1:Nlateral]
-				node_indices = [outer] + list(interior_nodes) + [inner]
-				points = R[node_indices]
+					# Get lateral nodes (excluding inner and outer)
+					interior_nodes = cell_nodes[1:Nlateral]
+					node_indices = [outer] + list(interior_nodes) + [inner]
+					points = R[node_indices]
 
-				# Compute tangents
-				dR = np.gradient(points, axis=0)
-				ds = np.linalg.norm(dR, axis=1)
-				tangent = dR / ds[:, None]
+					# Compute tangents
+					dR = np.gradient(points, axis=0)
+					ds = np.linalg.norm(dR, axis=1)
+					tangent = dR / ds[:, None]
 
-				# Compute curvature
-				dtangent = np.gradient(tangent, axis=0)
-				curvature = np.linalg.norm(dtangent, axis=1) / ds
+					# Compute curvature
+					dtangent = np.gradient(tangent, axis=0)
+					curvature = np.linalg.norm(dtangent, axis=1) / ds
 
-				# Arc length
-				arc_length = np.sum(ds)
+					# Arc length
+					arc_length = np.sum(ds)
 
-				# Arc-length-normalized total bending
-				total_bending = np.sum(curvature**2 * ds) * arc_length
+					# Arc-length-normalized total bending
+					total_bending = np.sum(curvature**2 * ds) * arc_length
 
-				curvature_pool[k].append(total_bending)		
-			tilt = tilt_angle(R, cell_list, Nlateral)
+					curvature_pool[k].append(total_bending)		
+				tilt = tilt_angle(R, cell_list, Nlateral)
 
-			total_tilt = tilt**2
-			tilt_pool[k].append(total_tilt)		
+				total_tilt = tilt**2
+				tilt_pool[k].append(total_tilt)		
 
 	strain = []
 	C = []
@@ -182,15 +181,6 @@ for kt in kt_range:
 
 	strain = np.array(strain)
 	C = np.array(C)
-
-	log_strain = np.log10(strain)
-	log_C = np.log10(C)
-
-	# Fit smoothing spline (tune `s` if needed, or set s=0 for interpolating spline)
-	spline_log = UnivariateSpline(log_strain, log_C, s=0.01)
-	# Derivatives
-
-	d2 = spline_log.derivative(2)(log_strain)
 
 	# Main
 	ax.plot(strain, C,c=colors[c_count], lw=1, marker="o",ms=2)
@@ -210,49 +200,49 @@ for kt in kt_range:
 
 	for V in V_range:
 		name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_ddlog9_V{V:03d}"#shape_kl_1.0_ka_0.01_kt_0.0_al_0.0_Ri_1.6_beta_0.5_N_20_d_0.0_disorder2_check"
-		data = np.load(f"Data/shape_{name}.npz")#np.load("Data/shape_kn_10.0_kl_1.0_ka_0.3_thr_0.5_d_0.1_inelastic_c.npz")
-		shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-		cell_list = data["cell_list"]
-		Niterations = shapes.shape[2]
+		with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+			shapes = h5["data"][:] 
+			cell_list = h5["cell_list"][:]
+			Niterations = shapes.shape[2]
 
-		data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
+			data_log = np.genfromtxt(f"Data/data_{name}.txt",skip_header=1) 
 
 
-		r0 = shapes[:,:,0]
-		for k in iterations_to_plot:
-			R = shapes[:, :, k]
-			for j,cell_nodes in enumerate(cell_list):
+			r0 = shapes[:,:,0]
+			for k in iterations_to_plot:
+				R = shapes[:, :, k]
+				for j,cell_nodes in enumerate(cell_list):
 
-				# Extract inner and outer node
-				inner = cell_nodes[Nlateral]
-				outer = cell_nodes[0]
+					# Extract inner and outer node
+					inner = cell_nodes[Nlateral]
+					outer = cell_nodes[0]
 
-				# Get lateral nodes (excluding inner and outer)
-				interior_nodes = cell_nodes[1:Nlateral]
-				node_indices = [outer] + list(interior_nodes) + [inner]
-				points = R[node_indices]
+					# Get lateral nodes (excluding inner and outer)
+					interior_nodes = cell_nodes[1:Nlateral]
+					node_indices = [outer] + list(interior_nodes) + [inner]
+					points = R[node_indices]
 
-				# Compute tangents
-				dR = np.gradient(points, axis=0)
-				ds = np.linalg.norm(dR, axis=1)
-				tangent = dR / ds[:, None]
+					# Compute tangents
+					dR = np.gradient(points, axis=0)
+					ds = np.linalg.norm(dR, axis=1)
+					tangent = dR / ds[:, None]
 
-				# Compute curvature
-				dtangent = np.gradient(tangent, axis=0)
-				curvature = np.linalg.norm(dtangent, axis=1) / ds
+					# Compute curvature
+					dtangent = np.gradient(tangent, axis=0)
+					curvature = np.linalg.norm(dtangent, axis=1) / ds
 
-				# Arc length
-				arc_length = np.sum(ds)
+					# Arc length
+					arc_length = np.sum(ds)
 
-				# Arc-length-normalized total bending
-				total_bending = np.sum(curvature**2 * ds) * arc_length
+					# Arc-length-normalized total bending
+					total_bending = np.sum(curvature**2 * ds) * arc_length
 
-				curvature_pool[k].append(total_bending)		
+					curvature_pool[k].append(total_bending)		
 
-			tilt = rotation_angles_from_inner_outer(R, r0, cell_list, Nlateral)
+				tilt = rotation_angles_from_inner_outer(R, r0, cell_list, Nlateral)
 
-			total_tilt = tilt**2
-			tilt_pool[k].append(total_tilt)		
+				total_tilt = tilt**2
+				tilt_pool[k].append(total_tilt)		
 
 	strain = []
 	C = []
@@ -270,23 +260,8 @@ for kt in kt_range:
 	strain = np.array(strain)
 	C = np.array(C)
 
-	log_strain = np.log10(strain)
-	log_C = np.log10(C)
-
-	# Fit smoothing spline (tune `s` if needed, or set s=0 for interpolating spline)
-	spline_log = UnivariateSpline(log_strain, log_C, s=0.01)
-	# Derivatives
-
-	d2 = spline_log.derivative(2)(log_strain)
-
 	# Main
 	ax2.plot(strain, C,c=colors[c_count],label=f"{kt}",lw=1,marker="o",ms=2)
-	log_strain_fine = np.linspace(log_strain.min(), log_strain.max(), 500)
-	log_tilt_smooth = spline_log(log_strain_fine)
-
-	# d1
-	log_strain_fine = np.linspace(log_strain.min(), log_strain.max(), 500)
-	d1 = spline_log.derivative(1)(log_strain_fine)
 
 	c_count +=1
 

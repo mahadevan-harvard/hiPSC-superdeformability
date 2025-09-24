@@ -1,14 +1,9 @@
 import numpy as np
-import os
-import datetime
-
+import h5py
 import matplotlib.pyplot as plt
 import matplotlib
 
 import plot_utils.PlotLibrary as plotlib
-
-from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
-							   AutoMinorLocator, LogLocator)
 
 from scipy.stats import gaussian_kde
 
@@ -45,41 +40,41 @@ bin_centers = 0.5 * (bins[:-1] + bins[1:])
 curvature_pool = {k: [] for k in iterations_to_plot}
 
 for V in V_range:
-	name = f"shape_kl_1.0_ko_1.0_ka_5e-05_kt_0.005_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"
-	data = np.load(f"Data/{name}.npz")
-	shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-	cell_list = data["cell_list"]
-	Niterations = shapes.shape[2]
+	name = f"kl_1.0_ko_1.0_ka_5e-05_kt_0.005_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"
+	with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+		shapes = h5["data"][:] 
+		cell_list = h5["cell_list"][:]
+		Niterations = shapes.shape[2]
 
-	for k in iterations_to_plot:
-		R = shapes[:, :, k]
-		for j,cell_nodes in enumerate(cell_list):
+		for k in iterations_to_plot:
+			R = shapes[:, :, k]
+			for j,cell_nodes in enumerate(cell_list):
 
-			# Extract inner and outer node
-			inner = cell_nodes[Nlateral]
-			outer = cell_nodes[0]
+				# Extract inner and outer node
+				inner = cell_nodes[Nlateral]
+				outer = cell_nodes[0]
 
-			# Get lateral nodes (excluding inner and outer)
-			interior_nodes = cell_nodes[1:Nlateral]
-			node_indices = [outer] + list(interior_nodes) + [inner]
-			points = R[node_indices]
+				# Get lateral nodes (excluding inner and outer)
+				interior_nodes = cell_nodes[1:Nlateral]
+				node_indices = [outer] + list(interior_nodes) + [inner]
+				points = R[node_indices]
 
-			# Compute tangents
-			dR = np.gradient(points, axis=0)
-			ds = np.linalg.norm(dR, axis=1)
-			tangent = dR / ds[:, None]
+				# Compute tangents
+				dR = np.gradient(points, axis=0)
+				ds = np.linalg.norm(dR, axis=1)
+				tangent = dR / ds[:, None]
 
-			# Compute curvatur.e
-			dtangent = np.gradient(tangent, axis=0)
-			curvature = np.linalg.norm(dtangent, axis=1) / ds
+				# Compute curvatur.e
+				dtangent = np.gradient(tangent, axis=0)
+				curvature = np.linalg.norm(dtangent, axis=1) / ds
 
-			# Arc length
-			arc_length = np.sum(ds)
+				# Arc length
+				arc_length = np.sum(ds)
 
-			# Arc-length-normalized total bending
-			total_bending = np.sum(curvature**2 * ds) * arc_length
+				# Arc-length-normalized total bending
+				total_bending = np.sum(curvature**2 * ds) * arc_length
 
-			curvature_pool[k].append(total_bending)		
+				curvature_pool[k].append(total_bending)		
 	
 # Example: pick specific iterations
 for k in iterations_to_plot:

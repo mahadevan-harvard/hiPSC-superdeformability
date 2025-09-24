@@ -1,13 +1,15 @@
 import numpy as np
+import h5py
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 # Load data from npz file
-name = "shape_kl_1.0_ko_1.0_ka_0.5_kt_0.5_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V001"
-data = np.load(f"Data/{name}.npz")
-shapes = data["data"]  # Shape: (Nnodes, 2, Niterations)
-edge_list = data["edge_list"]  # List of edges, shape: (Nedges, 2)
-outer_nodes = data["outer_nodes"]  # List of outer nodes
+name = "kl_1.0_ko_1.0_ka_0.5_kt_0.5_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V001"
+with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+	shapes = h5["data"][:] 
+	cell_list = h5["cell_list"][:]
+	edge_list = h5["edge_list"][:]
+	outer_nodes = h5["outer_nodes"][:]
 
 inner_nodes = ~outer_nodes
 
@@ -17,8 +19,6 @@ Niterations = shapes.shape[2]
 # Initialize the plot
 fig, ax = plt.subplots(figsize=(1,1))
 fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0) 
-#ax.set_xlim(np.min(shapes[:, 0, :]) - .25, np.max(shapes[:, 0, :]) + .25)
-#ax.set_ylim(np.min(shapes[:, 1, :]) - .25, np.max(shapes[:, 1, :]) + .25)
 ax.set_xlim(-4.5, 4.5)
 ax.set_ylim(-4.5, 4.5)
 ax.set_aspect('equal')  # Set the aspect ratio to equal
