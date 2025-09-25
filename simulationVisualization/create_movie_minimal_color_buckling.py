@@ -7,7 +7,7 @@ from matplotlib.patches import Rectangle
 
 # Load data from npz file
 name = "kl_1.0_ko_1.0_ka_5e-06_kt_5e-06_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V001"
-with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+with h5py.File(f"./Data/2Dsim_lin/shape_{name}.h5", "r") as h5:
 	shapes = h5["data"][:] 
 	cell_list = h5["cell_list"][:]
 	edge_list = h5["edge_list"][:]

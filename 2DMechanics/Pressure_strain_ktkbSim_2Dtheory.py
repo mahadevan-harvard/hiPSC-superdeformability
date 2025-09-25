@@ -38,7 +38,7 @@ norm = matplotlib.colors.Normalize(vmin=np.floor(logC_vals.min())-1, vmax=np.cei
 colors = cmap(norm(logC_vals))
 
 for i, kt in enumerate(kt_range):
-	path = f"./Data/data_kl_1.0_ko_1.0_ka_{kt}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V001.txt"
+	path = f"./Data/2Dsim_lin/data_kl_1.0_ko_1.0_ka_{kt}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V001.txt"
 	label = kt
 
 	data = np.genfromtxt(path, skip_header=1)

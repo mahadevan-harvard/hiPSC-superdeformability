@@ -5,7 +5,6 @@ jax.config.update('jax_enable_x64', True)
 jax.config.update("jax_platform_name", "cpu")
 
 import jax.numpy as jnp
-from jax.ops import segment_sum  # or use jax.experimental.segment_sum
 
 import fire2_circular_norot as fire
 

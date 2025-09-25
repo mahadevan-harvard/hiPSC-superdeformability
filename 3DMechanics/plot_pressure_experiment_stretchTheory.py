@@ -73,7 +73,7 @@ def compute_pressure_vs_strain(Ri, Ro, C1, C2, strain_array, n_points=200):
 E = 4200 
 
 # Import the data from anirban
-excelFile = "./Data/time_radius_thickness_strain_pressure_1kPa.xlsx"
+excelFile = "./Data/Experiment/time_radius_thickness_strain_pressure_1kPa.xlsx"
 #excelFile = "time_radius_thickness_strain_pressure_2kPa.xlsx"
 sheets_dict = pd.read_excel(excelFile, sheet_name=None)
 

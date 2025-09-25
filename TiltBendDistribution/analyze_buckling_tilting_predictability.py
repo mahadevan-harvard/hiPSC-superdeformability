@@ -83,7 +83,7 @@ for i,kt in enumerate(kt_range):
 
 	for V in V_range:
 		name = f"kl_1.0_ko_1.0_ka_{ka}_kt_{kt}_al_0.0_Ri_1.6_beta_0.5_N_20_d_1.0_dcount9_V{V:03d}"
-		with h5py.File(f"./Data/shape_{name}.h5", "r") as h5:
+		with h5py.File(f"./Data/2Dsim_lin/shape_{name}.h5", "r") as h5:
 			shapes = h5["data"][:] 
 			cell_list = h5["cell_list"][:]
 			Niterations = shapes.shape[2]

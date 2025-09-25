@@ -1,8 +1,9 @@
 # hiPSC-superdeformability
 
-## Installation
 
-3. **Install the package in editable mode::**
+## Installation for using plot_utils.PlotLibrary
+
+**Install the package in editable mode::**
 ```bash
     pip install -e .
 ```
